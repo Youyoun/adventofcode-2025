@@ -14,3 +14,14 @@ dependencies = [
     "networkx==3.4.2",
     "pathos==0.3.3",
 ]
+
+[project.scripts]
+aoc = "tool.AOC:AOC"
+
+[build-system]
+requires = ["uv_build>=0.9.13,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "tool"
+module-root = ""
