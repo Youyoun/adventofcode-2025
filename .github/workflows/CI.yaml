@@ -1,0 +1,33 @@
+name: CI
+
+on:  # yamllint disable-line rule:truthy
+  pull_request:
+  push:
+    branches:
+    - main
+  workflow_dispatch:
+    inputs:
+      days:
+        description: Run specific days (space delimiter)
+        required: true
+
+env:
+  INPUTS_DAYS: ${{ github.event.inputs.days }}
+
+jobs:
+  # Build
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 2
+    - name: Setup image
+      uses: ./.github/actions/setup
+      with:
+        python-version: "3.10"
+        clang-version: "16"
+        deno-version: "v2.x"
+        zig-version: "0.13.0"
+    - name: Build
+      run: ./build.sh

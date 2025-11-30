@@ -1,0 +1,33 @@
+name: Leaderboard
+
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches:
+    - main
+  workflow_dispatch:
+
+jobs:
+  # Build
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 2
+
+    - name: Setup image
+      uses: ./.github/actions/setup
+      with:
+        python-version: "3.10"
+        clang-version: "16"
+        deno-version: "v2.x"
+        zig-version: "0.13.0"
+
+    - name: Setup netlify
+      run: npm install -g netlify-cli
+
+    - name: Build
+      run: ./leaderboard.sh
+      continue-on-error: true
+      env:
+        NETLIFY_AUTH: ${{ secrets.NETLIFY_AUTH }}

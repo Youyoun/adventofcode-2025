@@ -1,0 +1,66 @@
+# File: .github/workflows/action.yml
+name: Setup packages
+description: "Setup packages for the CI"
+inputs:
+  python-version:
+    description: "Python version"
+    required: false
+    default: "3.10"
+  nim-version:
+    description: "Nim version"
+    required: false
+    default: "2.2.4"
+  clang-version:
+    description: "Clang version"
+    required: false
+    default: "16"
+  deno-version:
+    description: "Deno version"
+    required: false
+    default: "v1.x"
+  zig-version:
+    description: "Zig version"
+    required: false
+    default: "0.13.0"
+
+
+runs:
+  using: composite
+
+  steps:
+  - name: Fix remote refs
+    run: git fetch --no-tags --depth=2 origin main
+    shell: bash
+
+  # Install missing language compilers and interpreters
+  # The default image natively supports bash, c/c++, dotnet, go, java, julia, python, ruby, rust
+  # For new languages, see https://github.com/actions/runner-images/blob/5dd62e7/images/linux first
+
+  - name: Install uv
+    uses: astral-sh/setup-uv@v6
+    with:
+      version: "0.8.22"
+      enable-cache: true
+
+  - name: deps-python
+    run: uv sync --locked --all-extras --dev
+    shell: bash
+
+  - uses: denoland/setup-deno@v2
+    with:
+      deno-version: ${{ inputs.deno-version }}
+
+  - uses: mlugg/setup-zig@v1
+    with:
+      version: ${{ inputs.zig-version }}
+
+  - uses: jiro4989/setup-nim-action@v2
+    with:
+      nim-version: ${{ inputs.nim-version }}
+
+  - name: Install newer Clang
+    run: |
+      wget https://apt.llvm.org/llvm.sh
+      chmod +x ./llvm.sh
+      sudo ./llvm.sh ${{ inputs.clang-version }}
+    shell: bash
