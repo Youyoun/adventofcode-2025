@@ -66,6 +66,7 @@ uv sync
 ```
 
 It is also possible to install the package as a tool (which exposes the aoc command):
+
 ```bash
 uv tool install --editable .
 
