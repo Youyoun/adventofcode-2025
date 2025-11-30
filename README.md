@@ -226,7 +226,7 @@ brew install php@7.4
 brew install dotnet-sdk
 ```
 
-The official documentation is also available [here](https://docs.microsoft.com/en-us/dotnet/core/install/macos).
+The official .NET Core installation documentation is also available [on Microsoft Docs](https://docs.microsoft.com/en-us/dotnet/core/install/macos).
 
 ### Zig
 
