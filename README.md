@@ -55,11 +55,22 @@ aoc commands are:
 This project runs using [`uv`](https://github.com/astral-sh/uv)
 
 ```bash
+# Install uv if needed
+curl -LsSf https://astral.sh/uv/0.9.13/install.sh | sh
+
 # Install deps
 uv sync
 
 # And now aoc can work
 ./aoc run
+```
+
+It is also possible to install the package as a tool (which exposes the aoc command):
+
+```bash
+uv tool install --editable .
+
+aoc run ...
 ```
 
 ### Examples
