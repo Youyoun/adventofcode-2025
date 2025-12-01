@@ -17,18 +17,20 @@ fn run(input: &str) -> isize {
     while i < bytes.len() {
         while i < bytes.len() && bytes[i] != b'L' && bytes[i] != b'R' {
             i += 1;
-        };
+        }
         if i >= bytes.len() {
             break;
         }
         let add = bytes[i] == b'R';
+        let mut mod_100 = 0;
         let mut tens = 0;
         let mut units = 0;
         i += 1;
         while i < bytes.len() {
             match bytes[i] {
                 digit @ b'0'..=b'9' => {
-                    count += tens;
+                    mod_100 *= 10;
+                    mod_100 += tens;
                     tens = units;
                     units = (digit - b'0') as isize;
                 }
@@ -36,6 +38,7 @@ fn run(input: &str) -> isize {
             }
             i += 1;
         }
+        count += mod_100;
         let num = 10 * tens + units;
         if add {
             dial_pos += num;
@@ -74,6 +77,6 @@ mod tests {
     }
     #[test]
     fn run_test3() {
-        assert_eq!(run("L50 L100 L200 L200 R200 R300"), 11)
+        assert_eq!(run("L50 L100 L200 L200 R200 R300 R1000"), 21)
     }
 }
