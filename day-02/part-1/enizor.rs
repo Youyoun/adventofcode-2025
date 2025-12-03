@@ -15,7 +15,6 @@ fn run(input: &str) -> usize {
     let mut comma = usize::MAX;
     let mut hyphen = 0;
     let mut res = 0;
-    let mut ended = false;
     while cur < bytes.len() {
         match bytes[cur] {
             b'0'..=b'9' => {}
@@ -27,23 +26,14 @@ fn run(input: &str) -> usize {
                 );
                 comma = cur;
             }
-            _ => {
-                res += sum_invalid_ids(
-                    &bytes[comma.wrapping_add(1)..hyphen],
-                    &bytes[hyphen + 1..cur],
-                );
-                ended = true;
-                break;
-            } // consider any other char as EOF
+            _ => break, // consider any other char as EOF
         }
         cur += 1;
     }
-    if !ended {
-        res += sum_invalid_ids(
-            &bytes[comma.wrapping_add(1)..hyphen],
-            &bytes[hyphen + 1..cur],
-        );
-    }
+    res += sum_invalid_ids(
+        &bytes[comma.wrapping_add(1)..hyphen],
+        &bytes[hyphen + 1..cur],
+    );
     res
 }
 
@@ -60,14 +50,28 @@ fn sum_invalid_ids(lhs: &[u8], rhs: &[u8]) -> usize {
     if l % 2 != 0 {
         l += 1;
     }
-    let mut pow = 10usize.pow(l as u32 / 2);
+    let mut low_pow = 10usize.pow((l / 2 - 1) as u32);
+    let mut high_pow = 10 * low_pow;
     while l <= rhs.len() {
-        let div = pow + 1;
-        let min_div = min / div;
-        let max_div = if l == rhs.len() { max / div } else { pow - 1 };
+        // Count the number of multiples of div=10...001 with l/2-1 zeroes in ]99..999 with l-1 nines, max=999...999 with l nines]
+        let div = high_pow + 1;
+        // max multiplier below interval
+        let min_div = if l == lhs.len() {
+            min / div
+        } else {
+            low_pow - 1
+        };
+        // max multiplier in interval
+        let max_div = if l == rhs.len() {
+            max / div
+        } else {
+            high_pow - 1
+        };
+        // Now add Σ_{k=min_div+1}^{k=max_div} k×div
         res += div * (min_div + 1 + max_div) * (max_div - min_div) / 2;
         l += 2;
-        pow *= 10;
+        low_pow = high_pow;
+        high_pow *= 10;
     }
     res
 }
