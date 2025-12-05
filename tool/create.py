@@ -6,6 +6,7 @@ import random
 import re
 import sys
 from typing import NamedTuple
+from pathlib import Path
 
 # project
 import tool.discovery as discovery
@@ -93,6 +94,22 @@ def create_submission(author: str, path: str, language: str) -> None:
             os.symlink(os.path.realpath(submission_file), workspace_submission_file)
             # Log success
             print(f"[+] created symlink in {workspace_submission_file}")
+
+    if language == "ml":
+        submission_name = f"{re.sub('[^0-9a-zA-Z]+', '_', path[2:])}_{author}"
+        path_parts = Path(path).parts
+        (day, part) = (path_parts[-2], path_parts[-1])
+        with open("dune", "a") as f:
+            f.write(f"""(subdir
+ {day}
+ (subdir
+  {part}
+  (executable
+   (public_name {submission_name})
+   (libraries iter)
+   (name {author}))))
+
+""")
 
 
 def create_input(author: str, path: str) -> None:

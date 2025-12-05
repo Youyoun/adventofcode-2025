@@ -7,10 +7,12 @@ from tool.runners.cpp import SubmissionCpp
 from tool.runners.cs import SubmissionCs
 from tool.runners.cython_aoc import SubmissionPyx
 from tool.runners.deno import SubmissionDeno
+from tool.runners.exceptions import CompilationError
 from tool.runners.go import SubmissionGo
 from tool.runners.intcode import SubmissionIntcode
 from tool.runners.java import SubmissionJava
 from tool.runners.julia import SubmissionJulia
+from tool.runners.ml import SubmissionMl
 from tool.runners.nim import SubmissionNim
 from tool.runners.php import SubmissionPHP
 from tool.runners.python import SubmissionPy
@@ -89,3 +91,7 @@ def load_submission_runnable(
     #     return SubmissionV(path)
     elif language == "zig":
         return SubmissionZig(path)
+    elif language == "ml":
+        return SubmissionMl(path)
+    else:
+        raise CompilationError(f"no runner defined for language \"{language}\"")
