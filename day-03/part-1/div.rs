@@ -16,14 +16,14 @@ fn process_line(line: &str) -> isize {
 
     for (i, b) in bytes.iter().enumerate() {
         let digit = b - b'0';
-            if digit > max && i < bytes.len()-1 {
-                max = digit;
-                maybe_second_max = None;
-                continue
-            }
-            if maybe_second_max.is_none_or(| curr| { digit > curr } )  {
-                maybe_second_max = Some(digit);
-            }
+        if digit > max && i < bytes.len() - 1 {
+            max = digit;
+            maybe_second_max = None;
+            continue;
+        }
+        if maybe_second_max.is_none_or(|curr| digit > curr) {
+            maybe_second_max = Some(digit);
+        }
     }
     (max as isize) * 10 + maybe_second_max.unwrap() as isize
 }

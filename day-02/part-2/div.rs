@@ -11,9 +11,9 @@ fn main() {
 }
 
 fn parse_input(input: &str) -> impl Iterator<Item = (&str, &str)> {
-    input.split(',').map(|range| {
-        range.split_once('-').expect("could not split input")
-    })
+    input
+        .split(',')
+        .map(|range| range.split_once('-').expect("could not split input"))
 }
 
 fn count_digits(x: i64) -> i64 {
@@ -39,7 +39,7 @@ impl Mask {
 }
 
 fn generate_all_masks(max_digits: u32) -> HashMap<u32, HashSet<Mask>> {
-    let mut result : HashMap<u32,HashSet<Mask>> = HashMap::new();
+    let mut result: HashMap<u32, HashSet<Mask>> = HashMap::new();
 
     for curr_pattern_len in 1..max_digits {
         // generate all masks for the given pattern length
@@ -52,12 +52,11 @@ fn generate_all_masks(max_digits: u32) -> HashMap<u32, HashSet<Mask>> {
         loop {
             curr_mask = curr_mask * mult + 1;
             current_digits += curr_pattern_len;
-            let mask = Mask{
+            let mask = Mask {
                 value: curr_mask,
                 length: curr_pattern_len,
             };
-            result.entry(current_digits)
-            .or_default().insert(mask);
+            result.entry(current_digits).or_default().insert(mask);
             if current_digits > max_digits {
                 break;
             }
@@ -70,24 +69,30 @@ fn run(input: &str) -> isize {
     let ranges = parse_input(input);
     let masks_by_digit = generate_all_masks(15);
 
-    ranges.map(|(start, end)| {
-        let start_num = start.parse::<i64>().unwrap();
-        let end_num = end.parse::<i64>().unwrap();
+    ranges
+        .map(|(start, end)| {
+            let start_num = start.parse::<i64>().unwrap();
+            let end_num = end.parse::<i64>().unwrap();
 
-        (start_num..end_num+1).map(|x| {
-            let digits: u32= count_digits(x).try_into().unwrap();
-            match masks_by_digit.get(&digits) {
-                Some(masks) => {
-                    if masks.into_iter().any(|m| { m.matches(x)}) {
-                        x
-                    } else {
-                        0
+            (start_num..end_num + 1)
+                .map(|x| {
+                    let digits: u32 = count_digits(x).try_into().unwrap();
+                    match masks_by_digit.get(&digits) {
+                        Some(masks) => {
+                            if masks.into_iter().any(|m| m.matches(x)) {
+                                x
+                            } else {
+                                0
+                            }
+                        }
+                        None => 0,
                     }
-                },
-                None => 0,
-            }
-        }).sum::<i64>()
-    }).sum::<i64>().try_into().unwrap()
+                })
+                .sum::<i64>()
+        })
+        .sum::<i64>()
+        .try_into()
+        .unwrap()
 }
 
 #[cfg(test)]
@@ -121,12 +126,12 @@ mod tests {
         let masks_by_digits = generate_all_masks(6);
 
         let result = masks_by_digits.get(&2_u32).unwrap();
-        let expected: HashSet<Mask> = vec![
-            Mask{
-                value: 11,
-                length: 1,
-            },
-            ].into_iter().collect();
+        let expected: HashSet<Mask> = vec![Mask {
+            value: 11,
+            length: 1,
+        }]
+        .into_iter()
+        .collect();
         assert_eq!(result, &expected);
     }
 }

@@ -12,29 +12,29 @@ fn main() {
 fn process_line(line: &str) -> isize {
     let bytes = line.as_bytes();
     let len = bytes.len();
-    let mut vals : Vec<isize>= vec![0;12];
+    let mut vals: Vec<isize> = vec![0; 12];
 
     let mut left = 0;
     for k in 0..12 {
         // find the k-th digit
         // it's the leftmost max between the pos of the previous max and 12-k
         let (mut max_pos, mut max_val) = (0, 0);
-        for i in left..(len-11+k) {
+        for i in left..(len - 11 + k) {
             let curr = bytes[i] - b'0';
             if curr > max_val {
                 max_pos = i;
                 max_val = curr;
             }
             if curr == 9 {
-                break
+                break;
             }
         }
         vals[k] = max_val as isize;
-        left = max_pos+1;
+        left = max_pos + 1;
     }
-    
+
     // now build the number
-    vals.into_iter().reduce(|acc, e| 10*acc + e).unwrap()
+    vals.into_iter().reduce(|acc, e| 10 * acc + e).unwrap()
 }
 fn run(input: &str) -> isize {
     input.split('\n').map(process_line).sum::<isize>()

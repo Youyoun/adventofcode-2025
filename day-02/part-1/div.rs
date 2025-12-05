@@ -10,9 +10,9 @@ fn main() {
 }
 
 fn parse_input(input: &str) -> impl Iterator<Item = (&str, &str)> {
-    input.split(',').map(|range| {
-        range.split_once('-').expect("could not split input")
-    })
+    input
+        .split(',')
+        .map(|range| range.split_once('-').expect("could not split input"))
 }
 
 fn find_next_higher_prefix(x: &str) -> i64 {
@@ -21,14 +21,14 @@ fn find_next_higher_prefix(x: &str) -> i64 {
 
     if (digits % 2) == 0 {
         // half contains the first half digits
-        let half = x[0..(digits/2)].parse::<i64>().unwrap();
-        if num <= half * 10_i64.pow((digits as u32)/2) + half {
+        let half = x[0..(digits / 2)].parse::<i64>().unwrap();
+        if num <= half * 10_i64.pow((digits as u32) / 2) + half {
             half
         } else {
-            half+1
+            half + 1
         }
     } else {
-        10_i64.pow((digits as u32)/2)
+        10_i64.pow((digits as u32) / 2)
     }
 }
 
@@ -38,14 +38,14 @@ fn find_next_lower_prefix(x: &str) -> i64 {
 
     if (digits % 2) == 0 {
         // half contains the first half digits
-        let half = x[0..(digits/2)].parse::<i64>().unwrap();
-        if num >= half * 10_i64.pow((digits as u32)/2) + half {
+        let half = x[0..(digits / 2)].parse::<i64>().unwrap();
+        if num >= half * 10_i64.pow((digits as u32) / 2) + half {
             half
         } else {
-            half-1
+            half - 1
         }
     } else {
-        10_i64.pow((digits as u32)/2)-1
+        10_i64.pow((digits as u32) / 2) - 1
     }
 }
 
@@ -61,19 +61,25 @@ fn count_digits(x: i64) -> i64 {
 
 fn run(input: &str) -> isize {
     let ranges = parse_input(input);
-    ranges.map(|(start, end)| {
-        let left = find_next_higher_prefix(start);
-        let right = find_next_lower_prefix(end);
+    ranges
+        .map(|(start, end)| {
+            let left = find_next_higher_prefix(start);
+            let right = find_next_lower_prefix(end);
 
-        if right < left {
-            0
-        } else {
-            (left..right+1).map(| x| {
-                let digits = count_digits(x);
-                x * 10_i64.pow(digits as u32) + x
-            }).sum()
-        }
-    }).sum::<i64>().try_into().unwrap()
+            if right < left {
+                0
+            } else {
+                (left..right + 1)
+                    .map(|x| {
+                        let digits = count_digits(x);
+                        x * 10_i64.pow(digits as u32) + x
+                    })
+                    .sum()
+            }
+        })
+        .sum::<i64>()
+        .try_into()
+        .unwrap()
 }
 
 #[cfg(test)]
@@ -106,7 +112,7 @@ mod tests {
         assert_eq!(find_next_higher_prefix("1567"), 16);
         assert_eq!(find_next_higher_prefix("1616"), 16);
         assert_eq!(find_next_higher_prefix("1617"), 17);
-        
+
         assert_eq!(find_next_higher_prefix("12345"), 100);
     }
 
@@ -123,7 +129,7 @@ mod tests {
         assert_eq!(find_next_lower_prefix("1567"), 15);
         assert_eq!(find_next_lower_prefix("1716"), 16);
         assert_eq!(find_next_lower_prefix("1717"), 17);
-        
+
         assert_eq!(find_next_lower_prefix("12345"), 99);
     }
 }

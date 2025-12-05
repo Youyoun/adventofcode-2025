@@ -16,7 +16,7 @@ fn parse_input(input: &str) -> impl Iterator<Item = i64> {
         match direction {
             "R" => offset,
             "L" => -offset,
-            _ => unreachable!("unknown direction")
+            _ => unreachable!("unknown direction"),
         }
     })
 }
