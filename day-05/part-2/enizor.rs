@@ -11,58 +11,34 @@ fn main() {
     println!("{}", output);
 }
 
-#[derive(Debug, Default, Clone)]
-struct Ranges {
-    ranges: Vec<(usize, usize)>,
-    count: usize,
-}
-
-impl Ranges {
-    fn insert(&mut self, min: usize, max: usize) {
-        for &(a, b) in &self.ranges {
-            if min >= a && min <= b {
-                if max <= b {
-                    return;
-                } else {
-                    self.insert(b + 1, max);
-                    return;
-                }
-            }
-            if max >= a && max <= b {
-                if min >= a {
-                    return;
-                } else {
-                    self.insert(min, a - 1);
-                    return;
-                }
-            }
-            if min < a && max > b {
-                self.insert(min, a - 1);
-                self.insert(b + 1, max);
-                return;
-            }
-        }
-        self.ranges.push((min, max));
-        self.count += max - min + 1;
-    }
-    fn count(&self) -> usize {
-        self.count
-    }
-}
-
 fn run(input: &str) -> usize {
     let mut parser = Parser::from_input(&input);
-    let mut ranges = Ranges::default();
+    let mut ranges = vec![];
     while let Some(val) = parser.parse_usize() {
         debug_assert_eq!(parser.peek(), Some(&b'-'));
         parser.cur += 1;
         let max = parser
             .parse_usize()
             .unwrap_or_else(|| panic!("failed to parse near {}", parser.cur));
-        ranges.insert(val, max);
+        ranges.push((val, max));
         parser.cur += 1;
     }
-    ranges.count()
+    ranges.sort_unstable();
+    let mut res = 0;
+    let (mut min, mut max) = ranges[0];
+    for &(a, b) in &ranges[1..] {
+        if a <= max {
+            if b >= max {
+                max = b;
+            }
+        } else {
+            res += max - min + 1;
+            min = a;
+            max = b;
+        }
+    }
+    res += max - min + 1;
+    res
 }
 
 #[cfg(test)]
