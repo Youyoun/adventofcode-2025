@@ -30,8 +30,8 @@ fn run(input: &str) -> usize {
     let mut k = 0;
     for i in 1..ranges.len() {
         let (a, b) = ranges[i];
-        if a < max {
-            if b > max {
+        if a <= max {
+            if b >= max {
                 max = b;
             }
         } else {
