@@ -1,0 +1,20 @@
+(env
+ (_
+  (ocamlopt_flags -O3)))
+
+(subdir
+ day-01
+ (subdir
+  part-1
+  (executable
+   (public_name day_01_part_1_paullgdc)
+   (name paullgdc))))
+
+(subdir
+ day-01
+ (subdir
+  part-2
+  (executable
+   (public_name day_01_part_2_paullgdc)
+   (libraries base iter)
+   (name paullgdc))))

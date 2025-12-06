@@ -31,3 +31,7 @@ stable
 
 # Local Netlify folder
 .netlify
+
+# Ocaml
+_build
+_opam

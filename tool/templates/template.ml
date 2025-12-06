@@ -1,8 +1,7 @@
-let run () = 0
+let run (_input: String.t): int = 0
 
 let () =
-  (* Input is given is Sys.argv.(1) as well as stdin *)
-  let start = Sys.time () *. 1000. in
-  let result = run () in
-  let end_ = Sys.time () *. 1000. in
-  Printf.printf "_duration:%f\n%d\n" (end_ -. start) result
+  let t = Sys.time () in
+  let output = run Sys.argv.(1) in
+  let run_time_ms = 1000.0 *. (Sys.time () -. t) in
+  Format.printf "_duration:%F\n%d\n" run_time_ms output

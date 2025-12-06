@@ -23,7 +23,6 @@ inputs:
     required: false
     default: "0.13.0"
 
-
 runs:
   using: composite
 
@@ -64,3 +63,8 @@ runs:
       chmod +x ./llvm.sh
       sudo ./llvm.sh ${{ inputs.clang-version }}
     shell: bash
+
+  - name: Install ocaml
+    uses: ocaml-dune/setup-dune@v0
+    with:
+      automagic: true
