@@ -22,6 +22,7 @@ fn run(input: &str) -> usize {
         last_line += pos + 1;
         max_line_len = max_line_len.max(pos);
     }
+    line_lengths.push(bytes.len() - line_lengths.last().unwrap_or(&0));
     let mut res = 0;
     let mut col = 0;
     let mut add = true;
@@ -29,12 +30,11 @@ fn run(input: &str) -> usize {
     let mut add_acc = 0;
     let mut found_digit = false;
     while col < max_line_len {
-        let mut line = 0;
         if !found_digit {
             if add {
                 res += add_acc;
             } else {
-                res += mul_acc
+                res += mul_acc;
             }
             mul_acc = 1;
             add_acc = 0;
@@ -48,18 +48,24 @@ fn run(input: &str) -> usize {
                 ),
             };
         }
+        found_digit = false;
+        let mut line = 0;
         let mut cur = col;
         let mut val = 0;
-        found_digit = false;
+        let mut eol = line_lengths[line];
+
         while cur < last_line {
-            let v = bytes[cur];
-            if v.is_ascii_digit() {
-                val *= 10;
-                val += (v - b'0') as usize;
-                found_digit = true;
+            if cur < eol {
+                let v = bytes[cur];
+                if v.is_ascii_digit() {
+                    val *= 10;
+                    val += (v - b'0') as usize;
+                    found_digit = true;
+                }
             }
             cur += line_lengths[line];
             line += 1;
+            eol += line_lengths[line];
         }
         col += 1;
         if found_digit {
@@ -70,7 +76,7 @@ fn run(input: &str) -> usize {
     if add {
         res += add_acc;
     } else {
-        res += mul_acc
+        res += mul_acc;
     }
     res
 }
