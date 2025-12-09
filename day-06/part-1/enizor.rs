@@ -21,9 +21,9 @@ fn run(input: &str) -> usize {
     // find last line
     assert!(parser.find_str("\n"));
     let line_len = parser.cur;
-    let nb_lines = parser.bytes.len() / line_len;
+    let nb_lines = (parser.bytes.len() + (line_len/8)) / line_len;
     let mut ops = vec![];
-    parser.cur = (nb_lines - 1) * (line_len - 2);
+    parser.cur = (nb_lines - 1) * line_len -(line_len/8);
     assert!(parser.find_str("\n"));
     parser.skip_whitespace();
     while !parser.eof() {
