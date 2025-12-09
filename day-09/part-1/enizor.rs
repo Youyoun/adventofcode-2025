@@ -25,9 +25,9 @@ fn run(input: &str) -> usize {
     let mut max_area = 0;
     for (i, &(x1, y1)) in points.iter().enumerate() {
         for &(x2, y2) in points.iter().skip(i + 1) {
-            let dx = x2.abs_diff(x1)+1;
-            let dy = y2.abs_diff(y1)+1;
-            max_area = max_area.max(dx*dy);
+            let dx = x2.abs_diff(x1) + 1;
+            let dy = y2.abs_diff(y1) + 1;
+            max_area = max_area.max(dx * dy);
         }
     }
     max_area
