@@ -13,8 +13,13 @@ fn run(input: [:0]const u8) usize {
 
     const first_line = it.next() orelse unreachable;
 
-    const num_col: usize = first_line.len;
-    var num_row: usize = 1;
+    var num_col: usize = first_line.len;
+    while (it.next()) |line| {
+        num_col = @max(num_col,line.len);
+    }
+    it.reset();
+
+    var num_row: usize = 0;
     while (it.next()) |_| {
         num_row += 1;
     }
@@ -34,16 +39,23 @@ fn run(input: [:0]const u8) usize {
         symbols.append(val[0]) catch unreachable;
     }
 
+    it.reset();
+
     var grand_total: usize = 0;
     var current_numbers = std.ArrayList(usize).init(a);
     var count: usize = 0;
     for (0..num_col) |n_col| {
         const num_str = a.alloc(u8, num_row) catch unreachable;
-        for (0..num_row) |n_row| {
-            num_str[n_row] = input[n_col+(num_col+1)*n_row];
+        var i: usize = 0;
+        while (it.next()) |line| {
+            const char = if (n_col < line.len) line[n_col] else 0;
+            if (48 <= char and char <= 57) {
+                num_str[i] = char;
+                i += 1;
+            }
         }
-        const num = std.fmt.parseInt(usize, std.mem.trim(u8, num_str, " "), 10) catch 0;
-        if (num == 0) {
+        it.reset();
+        if (i == 0) {
             var total: usize = current_numbers.items[0];
             for (current_numbers.items[1..]) |n|{
                 if (symbols.items[count] == "+"[0]) {
@@ -58,6 +70,7 @@ fn run(input: [:0]const u8) usize {
             current_numbers.clearRetainingCapacity();
         }
         else {
+            const num = std.fmt.parseInt(usize, num_str[0..i], 10) catch 0;
             current_numbers.append(num) catch unreachable;
         }
     }
