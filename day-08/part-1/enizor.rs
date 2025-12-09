@@ -1,9 +1,7 @@
 use std::env::args;
 use std::time::Instant;
 
-use aoc::enizor::bitset::{VecBitSet, bitset_size};
 use aoc::enizor::parser::Parser;
-use aoc::enizor::utils::get_2_mut;
 
 fn main() {
     let now = Instant::now();
@@ -13,85 +11,123 @@ fn main() {
     println!("{}", output);
 }
 
+const ROOT_BIT: u16 = 1 << 15;
+const SIZE_MASK: u16 = !ROOT_BIT;
+// A root of size 1
+const DEFAULT_NODE: Node = Node(1 | ROOT_BIT);
+
+// Either a root with ROOT_BIT set and a size on the other bits
+// Or pointer to its parent
+#[derive(Debug, Clone, Copy)]
+struct Node(u16);
+
+impl Node {
+    fn is_root(&self) -> bool {
+        self.0 & ROOT_BIT != 0
+    }
+    fn parent(&self) -> u16 {
+        debug_assert!(!self.is_root());
+        self.0
+    }
+    fn size(&self) -> u16 {
+        debug_assert!(self.is_root());
+        self.0 & SIZE_MASK
+    }
+}
+
+struct DisjointSetForest {
+    nodes: Vec<Node>,
+}
+
+impl DisjointSetForest {
+    fn new(n: usize) -> Self {
+        assert!((n as u16) < ROOT_BIT);
+        Self {
+            nodes: vec![DEFAULT_NODE; n],
+        }
+    }
+    fn find_root(&mut self, mut n: u16) -> u16 {
+        loop {
+            let node = self.nodes[n as usize];
+            if node.is_root() {
+                return n;
+            } else {
+                let parent_node = self.nodes[node.parent() as usize];
+                if parent_node.is_root() {
+                    return node.parent();
+                } else {
+                    self.nodes[n as usize] = parent_node;
+                    n = parent_node.parent();
+                }
+            }
+        }
+    }
+    fn merge(&mut self, lhs: u16, rhs: u16) {
+        let l_root = self.find_root(lhs);
+        let r_root = self.find_root(rhs);
+        if l_root != r_root {
+            let size = self.nodes[r_root as usize].size();
+            self.nodes[r_root as usize].0 = l_root;
+            self.nodes[l_root as usize].0 += size;
+        }
+    }
+}
+
 fn run<const N: usize>(input: &str) -> usize {
     let mut parser = Parser::from_input(&input);
     let mut points = vec![];
     while let Some(x) = parser.parse_usize() {
+        assert!(x <= 1 << 20, "Cannot handle number {} > 10^6", x);
         parser.cur += 1;
         let y = parser
             .parse_usize()
             .unwrap_or_else(|| panic!("failed to parse near {}", parser.cur));
         parser.cur += 1;
+        assert!(y <= 1 << 20, "Cannot handle number {} > 10^6", y);
         let z = parser
             .parse_usize()
             .unwrap_or_else(|| panic!("failed to parse near {}", parser.cur));
-        points.push((x, y, z));
+        assert!(z <= 1 << 20, "Cannot handle number {} > 10^6", x);
+        points.push((x as f64, y as f64, z as f64));
         parser.cur += 1;
     }
 
     let mut dists = Vec::with_capacity(points.len() * points.len());
     for (i, &(x1, y1, z1)) in points.iter().enumerate() {
         for (j, &(x2, y2, z2)) in points.iter().enumerate().skip(i + 1) {
-            let dx = x2.abs_diff(x1);
-            let dy = y2.abs_diff(y1);
-            let dz = z2.abs_diff(z1);
-            dists.push((dx * dx + dy * dy + dz * dz, i, j));
+            let dx = x2 - x1; // <= 2^20 by hypothesis
+            let dy = y2 - y1;
+            let dz = z2 - z1;
+            // d^2 <= 3×2^40 < 2^41
+            // => min difference between d and d' is sqrt(2^41)-sqrt(2^41-1) ~ 1.4×2^-22
+            // => 24 bits of precision (f32) is enough to accurately distinguish all distances
+            let d = (dx * dx + dy * dy + dz * dz).sqrt() as f32;
+            // use to_bits as positive floats can be compared by transmuting their bits to u32
+            dists.push((d.to_bits(), i as u16, j as u16));
         }
     }
-    dists.sort_unstable();
-    let mut connex_comp: Vec<(VecBitSet, usize)> = vec![];
-    let mut to_merge = Vec::with_capacity(2);
-    'outer: for &(_, i, j) in &dists[0..N] {
-        to_merge.clear();
-        let mut add_i = false;
-        for (m, c) in connex_comp.iter().enumerate() {
-            let l = c.0.test(i);
-            let r = c.0.test(j);
-            if l && r {
-                continue 'outer;
-            }
-            if l || r {
-                add_i = r;
-                to_merge.push(m);
-                if to_merge.len() == 2 {
-                    break;
-                }
-            }
-        }
-        match to_merge.len() {
-            0 => {
-                let mut new_comp = VecBitSet::new(bitset_size(points.len()));
-                new_comp.set(i);
-                new_comp.set(j);
-                connex_comp.push((new_comp, 2));
-            }
-            1 => {
-                let chg = if add_i { i } else { j };
-                connex_comp[to_merge[0]].0.set(chg);
-                connex_comp[to_merge[0]].1 += 1;
-            }
-            2 => {
-                let (m0, m1) = get_2_mut(&mut connex_comp, to_merge[0], to_merge[1]);
-                m0.0 |= &m1.0;
-                m0.1 += &m1.1;
-                connex_comp.remove(to_merge[1]);
-            }
-            _ => unreachable!(),
-        }
+    dists.sort_unstable_by(|(d1, _, _), (d2, _, _)| d1.cmp(d2));
+
+    let mut circuits = DisjointSetForest::new(points.len());
+    for &(_, i, j) in &dists[0..N] {
+        circuits.merge(i, j);
     }
-    let (max_1, max_2, max_3) = connex_comp
-        .iter()
-        .fold((1, 1, 1), |(m1, m2, m3), (_comp, s)| {
-            if *s > m1 {
-                (*s, m1, m2)
-            } else if *s > m2 {
-                (m1, *s, m2)
-            } else if *s > m3 {
-                (m1, m2, *s)
+    let (max_1, max_2, max_3) = circuits.nodes.iter().fold((1, 1, 1), |(m1, m2, m3), c| {
+        if c.is_root() {
+            let s = (c.size()) as usize;
+            if s > m1 {
+                (s, m1, m2)
+            } else if s > m2 {
+                (m1, s, m2)
+            } else if s > m3 {
+                (m1, m2, s)
             } else {
                 (m1, m2, m3)
             }
-        });
+        } else {
+            (m1, m2, m3)
+        }
+    });
     max_1 * max_2 * max_3
 }
 
